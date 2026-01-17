@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kollam Sahodaya – KidsFest Results 2025-26</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #004c99;
+            --accent: #00b894;
+            --light: #f8f9fc;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --card: white;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12);
+        }
+
+        [data-theme="dark"] {
+            --primary: #60a5fa;
+            --primary-dark: #3b82f6;
+            --light: #0f172a;
+            --dark: #e2e8f0;
+            --gray: #94a3b8;
+            --card: #1e293b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family:
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                sans-serif;
+            background: linear-gradient(135deg, var(--light) 0%, #e0e7ff 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            transition: background 0.4s;
+        }
+
+        [data-theme="dark"] body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        header {
+            background: linear-gradient(90deg,
+                    var(--primary) 0%,
+                    var(--primary-dark) 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-container {
+            background: white;
+            padding: 6px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+
+        .logo-container img {
+            height: 54px;
+            width: auto;
+        }
+
+        .header-text h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin: 0;
+        }
+
+        .header-text .subtitle {
+            font-size: 0.92rem;
+            opacity: 0.9;
+        }
+
+        .theme-toggle {
+            margin-left: auto;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.4rem;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(1.08);
+        }
+
+        main {
+            max-width: 1480px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .category-container {
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2.5rem;
+            overflow: hidden;
+            transition: transform 0.25s;
+        }
+
+        .category-container:hover {
+            transform: translateY(-6px);
+        }
+
+        .category-header {
+            background: var(--primary);
+            color: white;
+            padding: 1.3rem 1.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .category-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .event-selector {
+            min-width: 280px;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            border: none;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--dark);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+
+        .table-wrapper {
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.96rem;
+        }
+
+        th,
+        td {
+            padding: 14px 12px;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        [data-theme="dark"] th,
+        [data-theme="dark"] td {
+            border-bottom-color: #334155;
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        tr:nth-child(even) {
+            background: rgba(0, 0, 0, 0.025);
+        }
+
+        [data-theme="dark"] tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        tr:hover {
+            background: rgba(0, 102, 204, 0.08) !important;
+        }
+
+        .position-1 {
+            background: #fef3c7;
+            color: #92400e;
+            font-weight: bold;
+        }
+
+        .position-2 {
+            background: #e0f2fe;
+            color: #0c4a6e;
+            font-weight: bold;
+        }
+
+        .position-3 {
+            background: #ecfdf5;
+            color: #065f46;
+            font-weight: bold;
+        }
+
+        [data-theme="dark"] .position-1 {
+            background: #78350f;
+            color: #fef3c7;
+        }
+
+        [data-theme="dark"] .position-2 {
+            background: #082f49;
+            color: #bae6fd;
+        }
+
+        [data-theme="dark"] .position-3 {
+            background: #064e3b;
+            color: #a7f3d0;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 4rem 1rem;
+            color: var(--gray);
+            font-size: 1.2rem;
+            font-style: italic;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body data-theme="light">
+    <header>
+        <div class="logo-container">
+            <img src="logo1.png" alt="Sahodaya Logo" />
+        </div>
+        <div class="header-text">
+            <h1>KOLLAM SAHODAYA</h1>
+            <div class="subtitle">
+                KidsFest 2025–26 • Mar Baselios Public School, Kaithacode
+            </div>
+        </div>
+        <button class="theme-toggle" aria-label="Toggle theme">
+            <i class="fas fa-moon"></i>
+        </button>
+    </header>
+
+    <main>
+        <div class="category-container">
+            <div class="category-header">
+                <h2>Category 1</h2>
+                <select class="event-selector" id="eventSelect1">
+                    <option value="">Select Event...</option>
+                </select>
+            </div>
+            <div class="table-wrapper">
+                <table id="table1"></table>
+            </div>
+        </div>
+
+        <div class="category-container">
+            <div class="category-header">
+                <h2>Category 2</h2>
+                <select class="event-selector" id="eventSelect2">
+                    <option value="">Select Event...</option>
+                </select>
+            </div>
+            <div class="table-wrapper">
+                <table id="table2"></table>
+            </div>
+        </div>
+    </main>
+
+    <footer>© 2025–26 Kollam Sahodaya Complex • Results Viewing System</footer>
+
+    <script>
+        const themeToggle = document.querySelector(".theme-toggle");
+        themeToggle.addEventListener("click", () => {
+            const current = document.body.getAttribute("data-theme");
+            const next = current === "dark" ? "light" : "dark";
+            document.body.setAttribute("data-theme", next);
+            themeToggle.innerHTML =
+                next === "dark"
+                    ? '<i class="fas fa-sun"></i>'
+                    : '<i class="fas fa-moon"></i>';
+        });
+
+        async function loadCategory(url, selectId, tableId) {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error("File not found");
+
+                const data = await res.arrayBuffer();
+                const wb = XLSX.read(data, { type: "array" });
+
+                let allRows = [];
+                let events = [];
+
+                wb.SheetNames.forEach((sheetName) => {
+                    const sheet = wb.Sheets[sheetName];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+                    if (rows.length > 0) {
+                        events.push(sheetName);
+                        rows.forEach((r) => {
+                            r.__event = sheetName;
+                        });
+                        allRows.push(...rows);
+                    }
+                });
+
+                const select = document.getElementById(selectId);
+                select.innerHTML = '<option value="">Select Event...</option>';
+
+                events.sort().forEach((event) => {
+                    const opt = document.createElement("option");
+                    opt.value = event;
+                    opt.textContent = event;
+                    select.appendChild(opt);
+                });
+
+                select.onchange = () => {
+                    const value = select.value;
+                    const filtered = value
+                        ? allRows.filter((r) => r.__event === value)
+                        : [];
+                    renderResultsTable(filtered, tableId);
+                };
+
+                // Auto-load first event
+                if (events.length > 0) {
+                    select.value = events[0];
+                    select.dispatchEvent(new Event("change"));
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById(tableId).innerHTML =
+                    `<div class="no-data">Could not load results for this category</div>`;
+            }
+        }
+
+        function renderResultsTable(data, tableId) {
+            const table = document.getElementById(tableId);
+            table.innerHTML = "";
+
+            if (!data?.length) {
+                table.innerHTML =
+                    '<div class="no-data">No results available for this event</div>';
+                return;
+            }
+
+            // Try to detect event name from first few rows
+            let displayEventName = data[0].__event || "Event Results";
+            let startDataIndex = 0;
+
+            // Look in first 5 rows for likely event name row
+            for (let i = 0; i < Math.min(5, data.length); i++) {
+                const row = data[i];
+                const values = Object.values(row)
+                    .map((v) => String(v ?? "").trim())
+                    .filter((v) => v !== "");
+
+                if (values.length >= 1) {
+                    const joined = values.join(" ").toUpperCase();
+                    // Heuristics: long text, contains EVENT/ITEM/SUBJECT, no numbers at start
+                    if (
+                        joined.length > 10 &&
+                        !/^\d/.test(joined) &&
+                        !joined.includes("SL.NO") &&
+                        !joined.includes("S.NO") &&
+                        !joined.includes("ROLL NO") &&
+                        (joined.includes("EVENT") ||
+                            joined.includes("ITEM") ||
+                            joined.includes("SUBJECT") ||
+                            joined.includes("CLASS") ||
+                            values.length === 1 ||
+                            i === 0)
+                    ) {
+                        displayEventName = values.join(" ");
+                        startDataIndex = i + 1;
+                        break;
+                    }
+                }
+            }
+
+            // Take real data rows after possible title rows
+            const realData = data.slice(startDataIndex).filter((row) => {
+                const vals = Object.values(row)
+                    .map((v) => String(v ?? "").trim())
+                    .filter((v) => v !== "");
+                return vals.length > 2; // require at least some meaningful columns
+            });
+           
+
+            if (realData.length === 0) {
+                table.innerHTML =
+                    '<div class="no-data">No valid result rows found</div>';
+                return;
+            }
+
+            const headers = Object.keys(realData[0]).filter((h) => h !== "__event");
+            console.log(headers);
+
+            const thead = document.createElement("thead");
+
+            // === EVENT NAME TITLE (big & beautiful) ===
+            const titleRow = document.createElement("tr");
+            
+            const titleCell = document.createElement("th");
+            
+            titleCell.colSpan = headers.length;
+            titleCell.textContent = displayEventName.toUpperCase();
+            titleCell.style.cssText = `
+    background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+    color: white;
+    font-size: 1.65rem;
+    font-weight: 800;
+    padding: 28px 16px;
+    text-align: center;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    border-bottom: 6px solid #93c5fd;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  `;
+            titleRow.appendChild(titleCell);
+            thead.appendChild(titleRow);
+
+            // === Column Headers ===
+            const headerRow = document.createElement("tr");
+            headers.forEach((h) => {
+                const th = document.createElement("th");
+                th.textContent = h
+                    .replace(/_/g, " ")
+                    .replace(/\b\w/g, (c) => c.toUpperCase());
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+
+            table.appendChild(thead);
+
+            // === Results rows with winner highlighting ===
+            const tbody = document.createElement("tbody");
+            realData.forEach((row) => {
+                const tr = document.createElement("tr");
+
+                const posCol = headers.find((h) =>
+                    /position|rank|place|pos|prize/i.test(h),
+                );
+                if (posCol) {
+                    const pos = String(row[posCol] || "")
+                        .trim()
+                        .toLowerCase();
+                    if (pos.match(/(^1\b|1st|first|gold)/i))
+                        tr.classList.add("position-1");
+                    else if (pos.match(/(^2\b|2nd|second|silver)/i))
+                        tr.classList.add("position-2");
+                    else if (pos.match(/(^3\b|3rd|third|bronze)/i))
+                        tr.classList.add("position-3");
+                }
+
+                headers.forEach((h) => {
+                    const td = document.createElement("td");
+                    td.textContent = row[h] ?? "";
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+
+            table.appendChild(tbody);
+        }
+
+        // Load your files
+        loadCategory("Result KIDSFEST - CAT 1.xlsx", "eventSelect1", "table1");
+        loadCategory("Result KIDSFEST - CAT 2.xlsx", "eventSelect2", "table2");
+    </script>
+</body>
+
+</html>
