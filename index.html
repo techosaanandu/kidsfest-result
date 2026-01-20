@@ -395,7 +395,7 @@
 
     <footer>© 2025–26 Kollam Sahodaya </footer>
 
-    <script>
+    <!-- <script>
         const themeToggle = document.querySelector(".theme-toggle");
         themeToggle.addEventListener("click", () => {
             const current = document.body.getAttribute("data-theme");
@@ -581,7 +581,218 @@
 
         loadCategory("Result KIDSFEST - CAT 1.xlsx", "eventSelect1", "table1");
         loadCategory("Result KIDSFEST - CAT 2.xlsx", "eventSelect2", "table2");
-    </script>
+    </script> -->
+    <script>
+    const themeToggle = document.querySelector(".theme-toggle");
+    themeToggle.addEventListener("click", () => {
+        const current = document.body.getAttribute("data-theme");
+        const next = current === "dark" ? "light" : "dark";
+        document.body.setAttribute("data-theme", next);
+        themeToggle.innerHTML =
+            next === "dark"
+                ? '<i class="fas fa-sun"></i>'
+                : '<i class="fas fa-moon"></i>';
+    });
+
+    async function loadCategory(url, selectId, tableId) {
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error("File not found");
+
+            const data = await res.arrayBuffer();
+            const wb = XLSX.read(data, { type: "array" });
+
+            let allRows = [];
+            let events = [];
+
+            wb.SheetNames.forEach((sheetName) => {
+                const trimmed = sheetName.trim();
+                // Skip the broken/empty "215" sheet — keep "215 C" and others
+                if (trimmed === "215" || trimmed === "215 ") {
+                    return; // skip this sheet completely
+                }
+
+                const sheet = wb.Sheets[sheetName];
+                const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+                if (rows.length > 0) {
+                    events.push(sheetName); // keep original name (e.g. "215 C")
+                    rows.forEach((r) => {
+                        r.__event = sheetName;
+                    });
+                    allRows.push(...rows);
+                }
+            });
+
+            const select = document.getElementById(selectId);
+            select.innerHTML = '<option value="">Select Event...</option>';
+
+            // Sort numerically (201, 202, ..., 215 C, 216, ...)
+            events.sort((a, b) => {
+                const numA = parseInt(a.match(/^\d+/)?.[0] || 999999);
+                const numB = parseInt(b.match(/^\d+/)?.[0] || 999999);
+                if (numA !== numB) return numA - numB;
+                return a.localeCompare(b);
+            });
+
+            events.forEach((event) => {
+                const opt = document.createElement("option");
+                opt.value = event;
+
+                // Make display nicer: show "215 C" instead of "215C" if needed
+                let display = event;
+                if (/^215C$/i.test(event.trim())) {
+                    display = "215 C";
+                }
+                opt.textContent = display;
+
+                select.appendChild(opt);
+            });
+
+            select.onchange = () => {
+                const value = select.value;
+                const filtered = value
+                    ? allRows.filter((r) => r.__event === value)
+                    : [];
+                renderResultsTable(filtered, tableId);
+            };
+
+            // Auto-select first event (will prefer something like 201 or 215 C)
+            if (events.length > 0) {
+                // Optional: try to auto-select 215 C if it exists
+                const preferred = events.find(e => e.includes("215"));
+                select.value = preferred || events[0];
+                select.dispatchEvent(new Event("change"));
+            }
+        } catch (err) {
+            console.error(err);
+            document.getElementById(tableId).innerHTML =
+                `<div class="no-data">Could not load results for this category</div>`;
+        }
+    }
+
+    function renderResultsTable(data, tableId) {
+        const table = document.getElementById(tableId);
+        table.innerHTML = "";
+
+        if (!data?.length) {
+            table.innerHTML =
+                '<div class="no-data">No results available for this event</div>';
+            return;
+        }
+
+        let displayEventName = data[0].__event || "Event Results";
+        let startDataIndex = 0;
+
+        for (let i = 0; i < Math.min(5, data.length); i++) {
+            const row = data[i];
+            const values = Object.values(row)
+                .map((v) => String(v ?? "").trim())
+                .filter((v) => v !== "");
+
+            if (values.length >= 1) {
+                const joined = values.join(" ").toUpperCase();
+                if (
+                    joined.length > 10 &&
+                    !/^\d/.test(joined) &&
+                    !joined.includes("SL.NO") &&
+                    !joined.includes("S.NO") &&
+                    !joined.includes("ROLL NO") &&
+                    (joined.includes("EVENT") ||
+                        joined.includes("ITEM") ||
+                        joined.includes("SUBJECT") ||
+                        joined.includes("CLASS") ||
+                        values.length === 1 ||
+                        i === 0)
+                ) {
+                    displayEventName = values.join(" ");
+                    startDataIndex = i + 1;
+                    break;
+                }
+            }
+        }
+
+        const realData = data.slice(startDataIndex).filter((row) => {
+            const vals = Object.values(row)
+                .map((v) => String(v ?? "").trim())
+                .filter((v) => v !== "");
+            return vals.length > 2;
+        });
+
+        if (realData.length === 0) {
+            table.innerHTML =
+                '<div class="no-data">No valid result rows found</div>';
+            return;
+        }
+
+        const headers = Object.keys(realData[0]).filter((h) => h !== "__event");
+
+        const thead = document.createElement("thead");
+
+        const titleRow = document.createElement("tr");
+        const titleCell = document.createElement("th");
+        titleCell.colSpan = headers.length;
+        titleCell.textContent = displayEventName.toUpperCase();
+        titleCell.classList.add('title-cell');
+        titleCell.style.cssText = `
+            background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+            color: white;
+            font-size: 1.65rem;
+            font-weight: 800;
+            padding: 28px 16px;
+            text-align: center;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            border-bottom: 6px solid #93c5fd;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        `;
+        titleRow.appendChild(titleCell);
+        thead.appendChild(titleRow);
+
+        const headerRow = document.createElement("tr");
+        headers.forEach((h) => {
+            const th = document.createElement("th");
+            th.textContent = h
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, (c) => c.toUpperCase());
+            headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+
+        table.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
+        realData.forEach((row) => {
+            const tr = document.createElement("tr");
+
+            const posCol = headers.find((h) =>
+                /position|rank|place|pos|prize/i.test(h)
+            );
+            if (posCol) {
+                const pos = String(row[posCol] || "")
+                    .trim()
+                    .toLowerCase();
+                if (pos.match(/(^1\b|1st|first|gold)/i))
+                    tr.classList.add("position-1");
+                else if (pos.match(/(^2\b|2nd|second|silver)/i))
+                    tr.classList.add("position-2");
+                else if (pos.match(/(^3\b|3rd|third|bronze)/i))
+                    tr.classList.add("position-3");
+            }
+
+            headers.forEach((h) => {
+                const td = document.createElement("td");
+                td.textContent = row[h] ?? "";
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+        });
+
+        table.appendChild(tbody);
+    }
+
+    loadCategory("Result KIDSFEST - CAT 1.xlsx", "eventSelect1", "table1");
+    loadCategory("Result KIDSFEST - CAT 2.xlsx", "eventSelect2", "table2");
+</script>
 </body>
 
 </html>
